@@ -14,6 +14,16 @@ The product is intentionally human-in-the-loop: it recommends an action and draf
 >
 > Try the prepared **Battery drain** and **Billing dispute** scenarios directly in the hosted app.
 
+## Assignment deliverables
+
+This README uses the same titles as the take-home assignment so each requirement can be checked quickly:
+
+1. [Runnable repository and reproduction](#1-runnable-repository-and-reproduction)
+2. [Golden evaluation set](#2-golden-evaluation-set)
+3. [Evaluation harness and LLM-as-judge](#3-evaluation-harness-and-llm-as-a-judge)
+4. [Report](#4-report)
+5. [Decision log](#5-decision-log)
+
 ## How the system works
 
 ```mermaid
@@ -41,7 +51,7 @@ flowchart LR
 | Draft | Suggested reply, never an automatic send | Keeps a human in control |
 | Triage | Auto-handle recommendation or escalation | Routes billing, account, legal, ambiguous, and risky cases |
 
-## Run locally
+## 1. Runnable repository and reproduction
 
 ### Windows PowerShell
 
@@ -100,13 +110,44 @@ OPENAI_MODEL = "gpt-4o-mini"
 
 If a key is ever pasted into chat, GitHub, a screenshot, a terminal command, or a committed file, revoke it immediately and create a replacement. This repository intentionally contains no real key.
 
-### Reproduce the evaluation
+## 2. Golden evaluation set
+
+The repository includes a **200-example hand-labelled evaluation set**, within the required 150–250 range:
+
+- Dataset: [eval/golden_set.csv](eval/golden_set.csv)
+- Sampling and labeling methodology: [eval/golden_set_notes.md](eval/golden_set_notes.md)
+- The set uses held-out AppleSupport examples, eight intent labels, ideal routing decisions, and reference reply directions.
+- The notes document the corpus split, stratified sampling, annotation rules, and single-annotator limitation.
+
+## 3. Evaluation harness and LLM-as-a-judge
+
+The evaluation harness compares the system with two baselines and evaluates classification, safety routing, and reply quality:
+
+- Harness: [eval/run_eval.py](eval/run_eval.py)
+- LLM-as-judge rubric: [eval/llm_judge.py](eval/llm_judge.py)
+- Human-agreement calibration code: [eval/human_agreement.py](eval/human_agreement.py)
+- Recorded results: [eval/eval_results.json](eval/eval_results.json)
+
+Run it with:
 
 ```powershell
 python -m eval.run_eval
 ```
 
-The checked-in evaluation harness uses the 200-example golden set and writes metrics to `eval/eval_results.json`. The repository includes the processed corpus and retrieval cache used by the demo, so a first run does not need to download the full Kaggle dataset.
+The harness includes a trivial majority-class baseline, a TF-IDF + Logistic Regression baseline, intent metrics, escalation precision/recall/F1, false-positive and false-negative analysis, and a five-dimension reply rubric. The reported human-agreement figures must be treated as calibration artifacts until independently collected human ratings are added; the current evaluator does not claim independent human validation.
+
+## 4. Report
+
+The full assignment report is [report/REPORT.md](report/REPORT.md). It covers:
+
+- Problem framing and what “good” means for @AppleSupport.
+- Explicit out-of-scope decisions.
+- Results against the trivial and TF-IDF baselines.
+- Top five failure modes with real examples and hypotheses.
+- The mandatory section explaining what is misleading about the headline number.
+- The plan for one more week of engineering.
+
+The current headline results are also summarized below for quick review.
 
 ## Using the demo
 
@@ -137,7 +178,7 @@ Record a 90-120 second walkthrough. Keep the browser at `http://localhost:8501` 
 
 For a polished video, crop out browser bookmarks and keep the address bar visible so the reviewer knows the demo is local. Do not record API keys, `.env`, or personal account information.
 
-## Headline evaluation results
+### Headline evaluation results
 
 | Area | Result |
 | --- | ---: |
@@ -149,6 +190,16 @@ For a polished video, crop out browser bookmarks and keep the address bar visibl
 | Golden examples | 200 |
 
 These are recorded repository benchmark results, not an independent certification. Re-run `python -m eval.run_eval --provider local` after cloning to regenerate them. The classification and triage numbers come from the checked-in 200-example golden set and the evaluation code. Reply quality uses an LLM-as-judge when a provider is configured; otherwise it uses the deterministic rubric fallback. Independent human-agreement statistics are intentionally not claimed by the current evaluator. Results can change if the data, cache, provider, prompt, or labels change. Accuracy is affected by class imbalance and the golden set was labelled by one annotator. The full discussion is in [report/REPORT.md](report/REPORT.md).
+
+## 5. Decision log
+
+The repository records **13 non-obvious engineering decisions** and their rationales in [report/DECISION_LOG.md](report/DECISION_LOG.md), including:
+
+- Brand selection and sampling budget.
+- Time-stratified sampling and the eight-intent taxonomy.
+- Retrieval leakage prevention.
+- Escalation safety policy.
+- Baseline design and evaluation limitations.
 
 ## Repository map
 
