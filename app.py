@@ -1,4 +1,5 @@
 import json
+import html
 import os
 from pathlib import Path
 
@@ -79,6 +80,10 @@ st.markdown(
         overflow-wrap: anywhere !important;
     }
     div[data-testid="stMetric"] [data-testid="stMetricDelta"] { font-size: .78rem !important; }
+    .metric-card { background: #1f2937; border: 1px solid #475569; border-radius: 10px; padding: .75rem .85rem; min-height: 104px; }
+    .metric-label { color: #cbd5e1; font-size: .82rem; line-height: 1.25; }
+    .metric-value { color: #f8fafc; font-size: 1.45rem; font-weight: 700; line-height: 1.2; margin-top: .55rem; overflow-wrap: anywhere; }
+    .metric-help { color: #94a3b8; font-size: .78rem; line-height: 1.25; margin-top: .45rem; }
     [data-testid="stCaptionContainer"] { font-size: .82rem !important; }
     h3 { font-size: 1.35rem !important; margin-top: 1.7rem !important; margin-bottom: .7rem !important; }
     h4 { font-size: 1.05rem !important; }
@@ -107,6 +112,19 @@ def load_golden_data():
 def set_scenario(name):
     st.session_state["tweet_text"] = SCENARIOS[name]
     st.session_state["last_result"] = None
+
+
+def render_metric_card(label, value, help_text):
+    st.markdown(
+        f"""
+        <div class="metric-card">
+            <div class="metric-label">{html.escape(label)}</div>
+            <div class="metric-value">{html.escape(str(value))}</div>
+            <div class="metric-help">{html.escape(help_text)}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def render_sidebar():
@@ -142,14 +160,14 @@ def render_result(result):
     grounding = result["grounding_score"]
 
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Intent", intent)
-    m1.caption("What is the customer asking about?")
-    m2.metric("Confidence", f"{result['confidence']:.0%}")
-    m2.caption("Classifier certainty")
-    m3.metric("Grounding", f"{grounding:.2f}")
-    m3.caption("Similarity to resolved cases")
-    m4.metric("Decision", decision_label)
-    m4.caption("Safety routing outcome")
+    with m1:
+        render_metric_card("Intent", intent, "What is the customer asking about?")
+    with m2:
+        render_metric_card("Confidence", f"{result['confidence']:.0%}", "Classifier certainty")
+    with m3:
+        render_metric_card("Grounding", f"{grounding:.2f}", "Similarity to resolved cases")
+    with m4:
+        render_metric_card("Decision", decision_label, "Safety routing outcome")
 
     left, right = st.columns([1.1, 0.9], gap="large")
     with left:
@@ -239,10 +257,14 @@ def render_evaluation():
     simple = classification.get("simple_baseline_tfidf", {})
     trivial = classification.get("trivial_baseline", {})
     a, b, c, d = st.columns(4)
-    a.metric("Held-out examples", results.get("total_examples_evaluated", 200))
-    b.metric("System accuracy", f"{system.get('accuracy', 0):.1%}")
-    c.metric("System macro F1", f"{system.get('macro_f1', 0):.3f}")
-    d.metric("Runtime", f"{results.get('execution_runtime_seconds', 0):.2f}s")
+    with a:
+        render_metric_card("Held-out examples", results.get("total_examples_evaluated", 200), "Golden evaluation set")
+    with b:
+        render_metric_card("System accuracy", f"{system.get('accuracy', 0):.1%}", "Intent classification")
+    with c:
+        render_metric_card("System macro F1", f"{system.get('macro_f1', 0):.3f}", "Balanced intent score")
+    with d:
+        render_metric_card("Runtime", f"{results.get('execution_runtime_seconds', 0):.2f}s", "Evaluation runtime")
     st.markdown("### Baseline comparison")
     table = pd.DataFrame([
         {"Model": "Trivial majority class", "Accuracy": trivial.get("accuracy", 0), "Macro F1": trivial.get("macro_f1", 0)},
