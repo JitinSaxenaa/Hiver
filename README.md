@@ -8,6 +8,12 @@ An explainable support copilot for `@AppleSupport` built from real customer-supp
 
 The product is intentionally human-in-the-loop: it recommends an action and drafts a response; it never silently sends a customer reply.
 
+> ## Live demo
+>
+> **[Open the deployed Hiver Support Copilot](https://hiver-working-project.streamlit.app/)**
+>
+> Try the prepared **Battery drain** and **Billing dispute** scenarios directly in the hosted app.
+
 ## How the system works
 
 ```mermaid
@@ -116,7 +122,7 @@ The checked-in evaluation harness uses the 200-example golden set and writes met
 5. Use **Evaluation** to compare against the majority-class and TF-IDF baselines.
 6. Use **Intent guide** to explain the taxonomy and out-of-scope boundaries.
 
-## Demo video and screenshots
+## Demo video
 
 Record a 90-120 second walkthrough. Keep the browser at `http://localhost:8501` and zoom to approximately 110%.
 
@@ -128,21 +134,6 @@ Record a 90-120 second walkthrough. Keep the browser at `http://localhost:8501` 
 4. **0:55-1:10 - Explainability:** expand **Show grounding evidence** and read one historical customer/reply pair.
 5. **1:10-1:25 - Evaluation:** open **Evaluation** and show the system versus trivial and TF-IDF baselines.
 6. **1:25-1:40 - Boundaries:** open **Intent guide** and explain that private DMs, image-only messages, and multi-intent messages are not silently automated.
-
-### Screenshots to include in a submission
-
-Save screenshots in `docs/screenshots/` using these names, then keep the links below:
-
-- `agent-empty.png` - the clean starting screen with the five prepared scenarios.
-- `agent-battery-result.png` - the battery result with the four output metrics and suggested reply.
-- `agent-billing-escalation.png` - the escalation result and stated safety reason.
-- `evaluation.png` - the baseline comparison page.
-
-![Agent demo](docs/screenshots/agent-battery-result.png)
-
-![Escalation decision](docs/screenshots/agent-billing-escalation.png)
-
-![Evaluation](docs/screenshots/evaluation.png)
 
 For a polished video, crop out browser bookmarks and keep the address bar visible so the reviewer knows the demo is local. Do not record API keys, `.env`, or personal account information.
 
@@ -172,7 +163,6 @@ eval/golden_set.csv            200 hand-labelled evaluation examples
 eval/run_eval.py               Evaluation harness
 report/REPORT.md               Results, failure analysis, limitations
 report/DECISION_LOG.md         Non-obvious architecture decisions
-docs/screenshots/              Submission screenshots
 ```
 
 ## References
